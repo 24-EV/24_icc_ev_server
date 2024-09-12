@@ -1,0 +1,21 @@
+{
+  "name": "icc_motor_nodejs",
+  "version": "1.0.0",
+  "main": "fs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "ws": "^8.18.0",
+    "xlsx": "^0.18.5"
+  },
+  "description": "",
+  "type": "module"
+}

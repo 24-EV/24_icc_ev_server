@@ -1,0 +1,16 @@
+[
+    {
+        "timestamp": "xxxx",
+        "data": [
+            {
+                "RPM": 1,
+                "MOTOR_CURRENT": 1,
+                "BATTERY_VOLTAGE": 1,
+                "THROTTLE_SIGNAL": 1,
+                "CONTROLLER_TEMPERATURE": 1,
+                "RTC": 1,
+                "PCB_TEMP": 1
+            }
+        ]
+    }
+]
