@@ -1,3 +1,5 @@
+// 0.0,1
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -167,5 +169,3 @@ io.on('connection', (socket) => {
 server.listen(port, () => {
   console.log(`${port} 포트에서 서버가 시작되었습니다.`);
 });
-
-// 하이하이
