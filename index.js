@@ -1,4 +1,4 @@
-// 0.0,1
+// 0.0.2
 
 const express = require('express');
 const fs = require('fs');
@@ -169,5 +169,3 @@ io.on('connection', (socket) => {
 server.listen(port, () => {
   console.log(`${port} 포트에서 서버가 시작되었습니다.`);
 });
-
-// jkdfajl
