@@ -3,7 +3,7 @@
         "timestamp": "xxxx",
         "data": [
             {
-                "RPM": 1,
+                "RPM": 111,
                 "MOTOR_CURRENT": 1,
                 "BATTERY_VOLTAGE": 1,
                 "THROTTLE_SIGNAL": 1,

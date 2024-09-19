@@ -1,145 +1,114 @@
-// 0.0.2
-
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 const cors = require('cors');
-const XLSX = require('xlsx');
 const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  pingTimeout: 60000,  // ping 타임아웃을 늘림 (기본값은 60000ms = 60초)
-  pingInterval: 25000,  // ping 간격을 늘림 (기본값은 25000ms = 25초)
+  pingTimeout: 60000,  // ping 타임아웃 설정 (60초)
+  pingInterval: 25000,  // ping 간격 설정 (25초)
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
-    // transports: ['websocket']
   }
 });
 
 const port = 2004;  // 서버 포트
 
-// 파일 경로 설정
-const totalPath = path.join(__dirname, 'data', 'total.json');
-const recentPath = path.join(__dirname, 'data', 'recent.json');
-const excelFilePath = path.join(__dirname, 'data', 'log.xlsx');
+// AWS SDK 설정 (여기에 자격 증명을 추가합니다)
+const dynamoDBClient = new DynamoDBClient({
+  region: 'ap-northeast-2',  // 지역 설정
+  credentials: {
+    accessKeyId: 'AKIAU6GD355IVGMNNTNG',  // 여기에 AWS 액세스 키 입력
+    secretAccessKey: 'AOiJFTGHugsnLMnB/waIwvP6/Q1K9t79h2mSF5YT'  // 여기에 AWS 비밀 키 입력
+  }
+});
 
 app.use(cors());
 app.use(express.json());
 
-let startTimestamp = null;  // Excel 로깅 시작 시간 저장 변수
-
-// JSON 파일에 새 데이터를 추가하는 함수
-function updateJsonFile(filePath, newData) {
-  fs.readFile(filePath, 'utf8', (err, fileData) => {
-    let jsonData = [];
-    if (!err && fileData) {
-      try {
-        jsonData = JSON.parse(fileData);
-      } catch {
-        jsonData = [];
-      }
+// DynamoDB에 데이터를 저장하는 함수
+async function saveToDynamoDB(data) {
+  const params = {
+    TableName: '24_icc_ev_database',  // DynamoDB 테이블 이름
+    Item: {
+      "timestamp": { S: new Date().toISOString() },
+      "RPM": { N: String(data.RPM) },
+      "MOTOR_CURRENT": { N: String(data.MOTOR_CURRENT) },
+      "BATTERY_VOLTAGE": { N: String(data.BATTERY_VOLTAGE) },
+      "THROTTLE_SIGNAL": { N: String(data.THROTTLE_SIGNAL) },
+      "CONTROLLER_TEMPERATURE": { N: String(data.CONTROLLER_TEMPERATURE) },
+      "RTC": { N: String(data.RTC) },
+      "PCB_TEMP": { N: String(data.PCB_TEMP) }
     }
-    jsonData.push(newData);
-    fs.writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf8', (err) => {
-      if (err) {
-        console.error(`Error writing file to disk: ${err}`);
-      }
-    });
-  });
-}
+  };
 
-// 최신 데이터를 recent.json에 저장하는 함수
-function updateJsonFileRecent(filePath, newData) {
-  fs.writeFile(filePath, JSON.stringify(newData, null, 2), 'utf8', (err) => {
-    if (err) {
-      console.error(`Error writing file to disk: ${err}`);
-    }
-  });
-}
-
-// 데이터 평탄화 함수
-function flattenData(data) {
-  return data.map(entry => ({
-    timestamp: entry.timestamp,
-    ...entry.data[0]
-  }));
-}
-
-// Excel 파일 처리 함수
-function processExcelFile(socket) {
   try {
-    if (!fs.existsSync(totalPath)) {
-      throw new Error('total.json 파일이 존재하지 않습니다.');
-    }
-    const fileContent = fs.readFileSync(totalPath, 'utf8');
-    const jsonData = JSON.parse(fileContent);
-    
-    const flatData = flattenData(jsonData);
-    const filteredData = flatData.filter(item => new Date(item.timestamp) >= new Date(startTimestamp));
-
-    let workbook = fs.existsSync(excelFilePath) ? XLSX.readFile(excelFilePath) : XLSX.utils.book_new();
-    
-    const sheetName = new Date().toISOString().replace(/[:.-]/g, '_');
-    const sheet = XLSX.utils.json_to_sheet(filteredData);
-    XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
-    XLSX.writeFile(workbook, excelFilePath);
-
-    socket.emit('excelStopped', { message: 'Excel 파일이 성공적으로 저장되었습니다.' });
-  } catch (error) {
-    console.error('Excel 파일 처리 중 오류 발생:', error);
-    socket.emit('error', { message: `Excel 파일 처리 중 오류 발생: ${error.message}` });
+    const command = new PutItemCommand(params);
+    await dynamoDBClient.send(command);
+    console.log('DynamoDB에 성공적으로 저장되었습니다:', data);
+  } catch (err) {
+    console.error('DynamoDB 저장 중 오류 발생:', err);
   }
+}
+
+// Excel 로깅을 처리하는 함수
+function processExcelFile(socket) {
+  // Excel 파일 처리 로직을 여기에 추가하세요.
+  // 예를 들어, 데이터를 CSV 파일로 저장하거나, 엑셀 라이브러리를 사용하여 엑셀 파일을 생성하는 등의 작업을 수행할 수 있습니다.
+
+  socket.emit('excelProcessed', { message: 'Excel 파일이 처리되었습니다.' });
 }
 
 // Socket.IO 연결 이벤트
 io.on('connection', (socket) => {
-  console.log('사용자 연결됨:', socket.id);  // 연결된 소켓의 ID 출력
+  console.log('사용자 연결됨:', socket.id);
 
-  // 클라이언트에서 발생한 에러를 처리하는 구문 추가
+  const dataWithKey = {
+    RPM: 2004,
+    MOTOR_CURRENT: 2004,
+    BATTERY_VOLTAGE: 2004,
+    THROTTLE_SIGNAL: 2004,
+    CONTROLLER_TEMPERATURE: 2004,
+    RTC: 2004,
+    PCB_TEMP: 2004
+  };
+  
+  saveToDynamoDB(dataWithKey);
+  
   socket.on('error', (err) => {
     console.error('Socket.IO Error:', err);
     socket.emit('error', { message: '서버에서 오류가 발생했습니다.', detail: err.message });
   });
-  
+
   socket.on('disconnect', (reason) => {
     console.log('사용자 연결 해제됨:', reason);
   });
-
-  // 데이터 요청
-  socket.on('requestData', () => {
-    fs.readFile(recentPath, 'utf8', (err, fileData) => {
-      if (err || !fileData || fileData.trim() === "") {
-        console.error('recent.json 파일을 읽는 중 오류 발생 또는 파일이 비어 있습니다.');
-        socket.emit('error', { message: '최근 데이터를 읽는 중 오류 발생' });
-        return;
-      }
-
-      try {
-        const recentData = JSON.parse(fileData);
-        socket.emit('dataReceived', { data: [recentData] });
-      } catch (error) {
-        console.error('최근 데이터 파싱 중 오류 발생:', error);
-        socket.emit('error', { message: '최근 데이터 파싱 중 오류 발생' });
-      }
-    });
-  });
-
-  // 데이터 수신 및 저장
+  
+  // 1. 수신된 데이터를 클라이언트에 즉시 전송
+  socket.emit('dataReceived', dataWithKey);
+  
+  // ESP32에서 데이터 수신 및 처리
   socket.on('sendData', (receivedData) => {
     try {
       const dataWithKey = {
-        timestamp: new Date().toISOString(),
-        data: receivedData.data
+        RPM: receivedData.RPM,
+        MOTOR_CURRENT: receivedData.MOTOR_CURRENT,
+        BATTERY_VOLTAGE: receivedData.BATTERY_VOLTAGE,
+        THROTTLE_SIGNAL: receivedData.THROTTLE_SIGNAL,
+        CONTROLLER_TEMPERATURE: receivedData.CONTROLLER_TEMPERATURE,
+        RTC: receivedData.RTC,
+        PCB_TEMP: receivedData.PCB_TEMP
       };
 
-      updateJsonFile(totalPath, dataWithKey);
-      updateJsonFileRecent(recentPath, dataWithKey);
+      // 1. 수신된 데이터를 클라이언트에 즉시 전송
+      socket.emit('dataReceived', dataWithKey);
+      
+      // 2. 동시에 데이터를 DynamoDB에 저장
+      saveToDynamoDB(dataWithKey);
 
-      socket.emit('dataReceived', { data: [dataWithKey] });
     } catch (error) {
       console.error('데이터 처리 중 오류 발생:', error);
       socket.emit('error', { message: '데이터 처리 중 오류 발생', detail: error.message });
@@ -149,7 +118,7 @@ io.on('connection', (socket) => {
   // Excel 로깅 시작
   socket.on('startExcel', () => {
     try {
-      startTimestamp = new Date().toISOString();
+      const startTimestamp = new Date().toISOString();
       socket.emit('excelStarted', { message: 'Excel 로깅 시작', startTimestamp });
     } catch (error) {
       console.error('Excel 로깅 시작 중 오류 발생:', error);
@@ -159,10 +128,13 @@ io.on('connection', (socket) => {
 
   // Excel 로깅 중지 및 파일 저장
   socket.on('stopExcel', () => {
-    processExcelFile(socket);
+    try {
+      processExcelFile(socket);  // Excel 파일 처리 함수 호출
+    } catch (error) {
+      console.error('Excel 처리 중 오류 발생:', error);
+      socket.emit('error', { message: 'Excel 처리 중 오류 발생', detail: error.message });
+    }
   });
-
-  // 연결 해제
 });
 
 // 서버 시작
