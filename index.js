@@ -161,35 +161,36 @@ app.post('/export-excel', async (req, res) => {
 io.on('connection', (socket) => {
   console.log('사용자 연결됨:', socket.id);
 
-  let tempValue = 2004;
-  let dataWithKey = {
-    RPM: parseInt(tempValue),
-    MOTOR_CURRENT: parseInt(tempValue),
-    BATTERY_VOLTAGE: parseInt(tempValue),
-    THROTTLE_SIGNAL: parseInt(tempValue),
-    CONTROLLER_TEMPERATURE: parseInt(tempValue),
-    RTC: parseInt(tempValue),
-    PCB_TEMP: parseInt(tempValue)
-  };
+  // 속도 테스트 코드임. 주석이 되어라아
+  // let tempValue = 2004;
+  // let dataWithKey = {
+  //   RPM: parseInt(tempValue),
+  //   MOTOR_CURRENT: parseInt(tempValue),
+  //   BATTERY_VOLTAGE: parseInt(tempValue),
+  //   THROTTLE_SIGNAL: parseInt(tempValue),
+  //   CONTROLLER_TEMPERATURE: parseInt(tempValue),
+  //   RTC: parseInt(tempValue),
+  //   PCB_TEMP: parseInt(tempValue)
+  // };
 
-  setInterval(function() {
-    console.log('tempValue : ', tempValue);
-    console.table(dataWithKey);
-    saveToDynamoDB(dataWithKey);
-    tempValue++;
+  // setInterval(function() {
+  //   console.log('tempValue : ', tempValue);
+  //   console.table(dataWithKey);
+  //   saveToDynamoDB(dataWithKey);
+  //   tempValue++;
 
-    socket.emit('dataReceived', dataWithKey);
+  //   socket.emit('dataReceived', dataWithKey);
 
-    dataWithKey = {
-      RPM: parseInt(tempValue),
-      MOTOR_CURRENT: parseInt(tempValue),
-      BATTERY_VOLTAGE: parseInt(tempValue),
-      THROTTLE_SIGNAL: parseInt(tempValue),
-      CONTROLLER_TEMPERATURE: parseInt(tempValue),
-      RTC: parseInt(tempValue),
-      PCB_TEMP: parseInt(tempValue)
-    };
-  }, 100);
+  //   dataWithKey = {
+  //     RPM: parseInt(tempValue),
+  //     MOTOR_CURRENT: parseInt(tempValue),
+  //     BATTERY_VOLTAGE: parseInt(tempValue),
+  //     THROTTLE_SIGNAL: parseInt(tempValue),
+  //     CONTROLLER_TEMPERATURE: parseInt(tempValue),
+  //     RTC: parseInt(tempValue),
+  //     PCB_TEMP: parseInt(tempValue)
+  //   };
+  // }, 100);
   
   // 수신된 데이터를 클라이언트에 즉시 전송
   socket.emit('dataReceived', dataWithKey);
