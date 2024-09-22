@@ -197,6 +197,7 @@ io.on('connection', (socket) => {
         
         let tempValue = 2004;
         const dataWithKey = {
+          timestamp : getKoreaTime(),
           RPM: parseInt(tempValue),
           MOTOR_CURRENT: parseInt(tempValue),
           BATTERY_VOLTAGE: parseInt(tempValue),
