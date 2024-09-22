@@ -202,8 +202,8 @@ io.on('connection', (socket) => {
           BATTERY_VOLTAGE: parseInt(tempValue),
           THROTTLE_SIGNAL: parseInt(tempValue),
           CONTROLLER_TEMPERATURE: parseInt(tempValue),
-          RTC: parseInt(tempValue),
-          PCB_TEMP: parseInt(tempValue)
+          SPEED: parseInt(tempValue),
+          BATTERY_PERCENT: parseInt(tempValue)
         };
         
         // 수신된 데이터를 클라이언트에 즉시 전송
