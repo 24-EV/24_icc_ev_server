@@ -10,48 +10,56 @@ const exceljs = require('exceljs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  pingTimeout: 60000,  // ping 타임아웃 설정 (60초)
-  pingInterval: 25000,  // ping 간격 설정 (25초)
+  pingTimeout: 20000,  // ping 타임아웃 20초로 늘림
+  pingInterval: 25000,  // ping 간격 25초로 유지
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
-  }
+  },
+  transports: ['websocket', 'polling']
 });
 
-const port = 2004;  // 서버 포트
 
-// AWS SDK 설정 (자격 증명을 추가합니다)
+const port = 2004;
+
+// AWS SDK 설정
 const dynamoDBClient = new DynamoDBClient({
-  region: 'ap-northeast-2',  // 지역 설정
+  region: 'ap-northeast-2',
   credentials: {
-    accessKeyId: process.env.DYNAMODB_ACCESS_KEY,  // 여기에 AWS 액세스 키 입력
-    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY // 여기에 AWS 비밀 키 입력
+    accessKeyId: process.env.DYNAMODB_ACCESS_KEY,
+    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY
   }
 });
 
 app.use(cors());
 app.use(express.json());
 
+function getKoreaTime() {
+  const koreaTime = new Date(Date.now() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+  return koreaTime.toISOString().replace('T', ' ').split('.')[0];
+}
+
 // DynamoDB에 데이터를 저장하는 함수
 async function saveToDynamoDB(data) {
   const params = {
-    TableName: '24_icc_ev_database',  // DynamoDB 테이블 이름
+    TableName: '24_icc_ev_database',
     Item: {
-      "timestamp": { S: new Date().toISOString() },
-      "RPM": { N: String(data.RPM) },
-      "MOTOR_CURRENT": { N: String(data.MOTOR_CURRENT) },
-      "BATTERY_VOLTAGE": { N: String(data.BATTERY_VOLTAGE) },
-      "THROTTLE_SIGNAL": { N: String(data.THROTTLE_SIGNAL) },
-      "CONTROLLER_TEMPERATURE": { N: String(data.CONTROLLER_TEMPERATURE) },
-      "RTC": { N: String(data.RTC) },
-      "PCB_TEMP": { N: String(data.PCB_TEMP) }
+      "timestamp": { S: getKoreaTime() },
+      "RPM": { N: String(data.RPM || 0) },  // 값이 undefined일 경우 기본값 0으로 대체
+      "MOTOR_CURRENT": { N: String(data.MOTOR_CURRENT || 0) },
+      "BATTERY_VOLTAGE": { N: String(data.BATTERY_VOLTAGE || 0) },
+      "THROTTLE_SIGNAL": { N: String(data.THROTTLE_SIGNAL || 0) },
+      "CONTROLLER_TEMPERATURE": { N: String(data.CONTROLLER_TEMPERATURE || 0) },
+      "SPEED": { N: String(data.SPEED || 0) },
+      "BATTERY_PERCENT": { N: String(data.BATTERY_PERCENT || 0) }
     }
   };
 
   try {
     const command = new PutItemCommand(params);
     await dynamoDBClient.send(command);
-    console.log('DynamoDB에 성공적으로 저장되었습니다:', data);
+    console.log('DynamoDB에 성공적으로 저장되었습니다:');
+    console.table(params.Item);
   } catch (err) {
     console.error('DynamoDB 저장 중 오류 발생:', err);
   }
@@ -74,7 +82,7 @@ async function scanDynamoDB(startDate, endDate) {
   try {
     const command = new ScanCommand(params);
     const data = await dynamoDBClient.send(command);
-    
+
     return data.Items.map(item => ({
       timestamp: item.timestamp.S,
       RPM: item.RPM.N,
@@ -82,8 +90,8 @@ async function scanDynamoDB(startDate, endDate) {
       BATTERY_VOLTAGE: item.BATTERY_VOLTAGE.N,
       THROTTLE_SIGNAL: item.THROTTLE_SIGNAL.N,
       CONTROLLER_TEMPERATURE: item.CONTROLLER_TEMPERATURE.N,
-      RTC: item.RTC.N,
-      PCB_TEMP: item.PCB_TEMP.N
+      SPEED: item.SPEED.N,
+      BATTERY_PERCENT: item.BATTERY_PERCENT.N
     }));
   } catch (err) {
     console.error('DynamoDB 조회 중 오류 발생:', err);
@@ -103,8 +111,8 @@ async function generateExcel(data) {
     { header: 'Battery Voltage', key: 'BATTERY_VOLTAGE', width: 20 },
     { header: 'Throttle Signal', key: 'THROTTLE_SIGNAL', width: 20 },
     { header: 'Controller Temperature', key: 'CONTROLLER_TEMPERATURE', width: 30 },
-    { header: 'RTC', key: 'RTC', width: 15 },
-    { header: 'PCB Temp', key: 'PCB_TEMP', width: 15 }
+    { header: 'Speed', key: 'SPEED', width: 20 },
+    { header: 'Battery Percent', key: 'BATTERY_PERCENT', width: 20 }
   ];
 
   data.forEach((item) => {
@@ -114,14 +122,29 @@ async function generateExcel(data) {
   return workbook;
 }
 
+// 16진수를 거꾸로 배열하고 10진수로 변환하는 함수
+function parseData(buffer) {
+  const parsedData = {};
+
+  parsedData.RPM = buffer.length >= 2 ? parseInt(buffer.slice(0, 2).reverse().toString('hex'), 16) : 0;
+  parsedData.MOTOR_CURRENT = buffer.length >= 4 ? parseInt(buffer.slice(2, 4).reverse().toString('hex'), 16) : 0;
+  parsedData.BATTERY_VOLTAGE = buffer.length >= 6 ? parseInt(buffer.slice(4, 6).reverse().toString('hex'), 16) : 0;
+  parsedData.THROTTLE_SIGNAL = buffer.length >= 8 ? parseInt(buffer.slice(6, 8).reverse().toString('hex'), 16) : 0;
+  parsedData.CONTROLLER_TEMPERATURE = buffer.length >= 10 ? parseInt(buffer.slice(8, 10).reverse().toString('hex'), 16) : 0;
+  parsedData.SPEED = buffer.length >= 12 ? parseInt(buffer.slice(10, 12).reverse().toString('hex'), 16) : 0;
+  parsedData.BATTERY_PERCENT = buffer.length >= 14 ? parseInt(buffer.slice(12, 14).reverse().toString('hex'), 16) : 0;
+
+  return parsedData;
+}
+
+
 // 클라이언트로부터 요청 받은 기간 동안의 데이터를 조회하고 Excel로 변환하여 전달하는 엔드포인트
 app.post('/export-excel', async (req, res) => {
-  const { startDate, endDate } = req.body;  // 클라이언트로부터 시작/종료 날짜를 받음
+  const { startDate, endDate } = req.body;
 
   try {
-    const data = await scanDynamoDB(startDate, endDate);  // DynamoDB에서 데이터 조회
-
-    const workbook = await generateExcel(data);  // Excel 파일 생성
+    const data = await scanDynamoDB(startDate, endDate);
+    const workbook = await generateExcel(data);
 
     // 파일 전송
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -138,57 +161,70 @@ app.post('/export-excel', async (req, res) => {
 io.on('connection', (socket) => {
   console.log('사용자 연결됨:', socket.id);
 
-  const dataWithKey = {
-    RPM: 2004,
-    MOTOR_CURRENT: 2004,
-    BATTERY_VOLTAGE: 2004,
-    THROTTLE_SIGNAL: 2004,
-    CONTROLLER_TEMPERATURE: 2004,
-    RTC: 2004,
-    PCB_TEMP: 2004
+  let tempValue = 2004;
+  let dataWithKey = {
+    RPM: parseInt(tempValue),
+    MOTOR_CURRENT: parseInt(tempValue),
+    BATTERY_VOLTAGE: parseInt(tempValue),
+    THROTTLE_SIGNAL: parseInt(tempValue),
+    CONTROLLER_TEMPERATURE: parseInt(tempValue),
+    RTC: parseInt(tempValue),
+    PCB_TEMP: parseInt(tempValue)
   };
-  
-  saveToDynamoDB(dataWithKey);
-  
-  socket.on('error', (err) => {
-    console.error('Socket.IO Error:', err);
-    socket.emit('error', { message: '서버에서 오류가 발생했습니다.', detail: err.message });
-  });
 
-  socket.on('disconnect', (reason) => {
-    console.log('사용자 연결 해제됨:', reason);
-  });
+  setInterval(function() {
+    console.log('tempValue : ', tempValue);
+    console.table(dataWithKey);
+    saveToDynamoDB(dataWithKey);
+    tempValue++;
+
+    socket.emit('dataReceived', dataWithKey);
+
+    dataWithKey = {
+      RPM: parseInt(tempValue),
+      MOTOR_CURRENT: parseInt(tempValue),
+      BATTERY_VOLTAGE: parseInt(tempValue),
+      THROTTLE_SIGNAL: parseInt(tempValue),
+      CONTROLLER_TEMPERATURE: parseInt(tempValue),
+      RTC: parseInt(tempValue),
+      PCB_TEMP: parseInt(tempValue)
+    };
+  }, 100);
   
-  // 1. 수신된 데이터를 클라이언트에 즉시 전송
+  // 수신된 데이터를 클라이언트에 즉시 전송
   socket.emit('dataReceived', dataWithKey);
-  
+
   // ESP32에서 데이터 수신 및 처리
   socket.on('sendData', (receivedData) => {
     try {
-      const dataWithKey = {
-        RPM: receivedData.RPM,
-        MOTOR_CURRENT: receivedData.MOTOR_CURRENT,
-        BATTERY_VOLTAGE: receivedData.BATTERY_VOLTAGE,
-        THROTTLE_SIGNAL: receivedData.THROTTLE_SIGNAL,
-        CONTROLLER_TEMPERATURE: receivedData.CONTROLLER_TEMPERATURE,
-        RTC: receivedData.RTC,
-        PCB_TEMP: receivedData.PCB_TEMP
-      };
-
-      // 1. 수신된 데이터를 클라이언트에 즉시 전송
-      socket.emit('dataReceived', dataWithKey);
+      // receivedData가 28자리의 16진수 배열로 들어온다고 가정
+      const buffer = Buffer.from(receivedData, 'hex'); // receivedData를 Buffer로 변환 (16진수)
       
-      // 2. 동시에 데이터를 DynamoDB에 저장
-      saveToDynamoDB(dataWithKey);
+      // 데이터를 파싱하여 10진수로 변환
+      const parsedData = parseData(buffer);
+
+      // 파싱된 데이터 출력
+      console.log('Parsed Data:', parsedData);
+
+      // 데이터를 저장
+      saveToDynamoDB(parsedData);
+
+      // 수신된 데이터를 클라이언트에 즉시 전송
+      socket.emit('dataReceived', parsedData);
 
     } catch (error) {
       console.error('데이터 처리 중 오류 발생:', error);
       socket.emit('error', { message: '데이터 처리 중 오류 발생', detail: error.message });
     }
   });
+
+  socket.on('disconnect', (reason) => {
+    console.log('사용자 연결 해제됨:', reason);
+  });
 });
 
 // 서버 시작
 server.listen(port, () => {
   console.log(`${port} 포트에서 서버가 시작되었습니다.`);
+  console.log(getKoreaTime());
 });
