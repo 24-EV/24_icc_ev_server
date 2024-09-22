@@ -1,2 +1,7 @@
 # 24_icc_ev_server
 2024 ICC EV 서버 레포지토리
+
+
+AKIAU6GD355IVGMNNTNG
+
+AOiJFTGHugsnLMnB/waIwvP6/Q1K9t79h2mSF5YT

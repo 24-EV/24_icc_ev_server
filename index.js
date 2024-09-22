@@ -1,8 +1,11 @@
+require('dotenv').config();
+
 const express = require('express');
-const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBClient, ScanCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const exceljs = require('exceljs');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,12 +20,12 @@ const io = new Server(server, {
 
 const port = 2004;  // 서버 포트
 
-// AWS SDK 설정 (여기에 자격 증명을 추가합니다)
+// AWS SDK 설정 (자격 증명을 추가합니다)
 const dynamoDBClient = new DynamoDBClient({
   region: 'ap-northeast-2',  // 지역 설정
   credentials: {
-    accessKeyId: 'AKIAU6GD355IVGMNNTNG',  // 여기에 AWS 액세스 키 입력
-    secretAccessKey: 'AOiJFTGHugsnLMnB/waIwvP6/Q1K9t79h2mSF5YT'  // 여기에 AWS 비밀 키 입력
+    accessKeyId: process.env.DYNAMODB_ACCESS_KEY,  // 여기에 AWS 액세스 키 입력
+    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY // 여기에 AWS 비밀 키 입력
   }
 });
 
@@ -54,13 +57,82 @@ async function saveToDynamoDB(data) {
   }
 }
 
-// Excel 로깅을 처리하는 함수
-function processExcelFile(socket) {
-  // Excel 파일 처리 로직을 여기에 추가하세요.
-  // 예를 들어, 데이터를 CSV 파일로 저장하거나, 엑셀 라이브러리를 사용하여 엑셀 파일을 생성하는 등의 작업을 수행할 수 있습니다.
+// DynamoDB에서 날짜 범위로 데이터 조회
+async function scanDynamoDB(startDate, endDate) {
+  const params = {
+    TableName: '24_icc_ev_database',
+    FilterExpression: "#timestamp between :start and :end",
+    ExpressionAttributeNames: {
+      "#timestamp": "timestamp"
+    },
+    ExpressionAttributeValues: {
+      ":start": { S: new Date(startDate).toISOString() },
+      ":end": { S: new Date(endDate).toISOString() }
+    }
+  };
 
-  socket.emit('excelProcessed', { message: 'Excel 파일이 처리되었습니다.' });
+  try {
+    const command = new ScanCommand(params);
+    const data = await dynamoDBClient.send(command);
+    
+    return data.Items.map(item => ({
+      timestamp: item.timestamp.S,
+      RPM: item.RPM.N,
+      MOTOR_CURRENT: item.MOTOR_CURRENT.N,
+      BATTERY_VOLTAGE: item.BATTERY_VOLTAGE.N,
+      THROTTLE_SIGNAL: item.THROTTLE_SIGNAL.N,
+      CONTROLLER_TEMPERATURE: item.CONTROLLER_TEMPERATURE.N,
+      RTC: item.RTC.N,
+      PCB_TEMP: item.PCB_TEMP.N
+    }));
+  } catch (err) {
+    console.error('DynamoDB 조회 중 오류 발생:', err);
+    throw err;
+  }
 }
+
+// 데이터를 Excel 파일로 변환
+async function generateExcel(data) {
+  const workbook = new exceljs.Workbook();
+  const worksheet = workbook.addWorksheet('ICC EV Data');
+
+  worksheet.columns = [
+    { header: 'Timestamp', key: 'timestamp', width: 25 },
+    { header: 'RPM', key: 'RPM', width: 15 },
+    { header: 'Motor Current', key: 'MOTOR_CURRENT', width: 20 },
+    { header: 'Battery Voltage', key: 'BATTERY_VOLTAGE', width: 20 },
+    { header: 'Throttle Signal', key: 'THROTTLE_SIGNAL', width: 20 },
+    { header: 'Controller Temperature', key: 'CONTROLLER_TEMPERATURE', width: 30 },
+    { header: 'RTC', key: 'RTC', width: 15 },
+    { header: 'PCB Temp', key: 'PCB_TEMP', width: 15 }
+  ];
+
+  data.forEach((item) => {
+    worksheet.addRow(item);
+  });
+
+  return workbook;
+}
+
+// 클라이언트로부터 요청 받은 기간 동안의 데이터를 조회하고 Excel로 변환하여 전달하는 엔드포인트
+app.post('/export-excel', async (req, res) => {
+  const { startDate, endDate } = req.body;  // 클라이언트로부터 시작/종료 날짜를 받음
+
+  try {
+    const data = await scanDynamoDB(startDate, endDate);  // DynamoDB에서 데이터 조회
+
+    const workbook = await generateExcel(data);  // Excel 파일 생성
+
+    // 파일 전송
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="data.xlsx"');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('엑셀 파일 생성 중 오류 발생:', error);
+    res.status(500).send('엑셀 파일 생성 중 오류가 발생했습니다.');
+  }
+});
 
 // Socket.IO 연결 이벤트
 io.on('connection', (socket) => {
@@ -112,27 +184,6 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('데이터 처리 중 오류 발생:', error);
       socket.emit('error', { message: '데이터 처리 중 오류 발생', detail: error.message });
-    }
-  });
-
-  // Excel 로깅 시작
-  socket.on('startExcel', () => {
-    try {
-      const startTimestamp = new Date().toISOString();
-      socket.emit('excelStarted', { message: 'Excel 로깅 시작', startTimestamp });
-    } catch (error) {
-      console.error('Excel 로깅 시작 중 오류 발생:', error);
-      socket.emit('error', { message: 'Excel 로깅 시작 중 오류 발생', detail: error.message });
-    }
-  });
-
-  // Excel 로깅 중지 및 파일 저장
-  socket.on('stopExcel', () => {
-    try {
-      processExcelFile(socket);  // Excel 파일 처리 함수 호출
-    } catch (error) {
-      console.error('Excel 처리 중 오류 발생:', error);
-      socket.emit('error', { message: 'Excel 처리 중 오류 발생', detail: error.message });
     }
   });
 });
