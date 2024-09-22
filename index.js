@@ -164,45 +164,60 @@ io.on('connection', (socket) => {
   // 속도 테스트 코드임. 주석이 되어라아
   // let tempValue = 2004;
   // let dataWithKey = {
-  //   RPM: parseInt(tempValue),
-  //   MOTOR_CURRENT: parseInt(tempValue),
-  //   BATTERY_VOLTAGE: parseInt(tempValue),
-  //   THROTTLE_SIGNAL: parseInt(tempValue),
-  //   CONTROLLER_TEMPERATURE: parseInt(tempValue),
-  //   RTC: parseInt(tempValue),
-  //   PCB_TEMP: parseInt(tempValue)
-  // };
-
-  // setInterval(function() {
-  //   console.log('tempValue : ', tempValue);
-  //   console.table(dataWithKey);
-  //   saveToDynamoDB(dataWithKey);
-  //   tempValue++;
-
-  //   socket.emit('dataReceived', dataWithKey);
-
-  //   dataWithKey = {
-  //     RPM: parseInt(tempValue),
-  //     MOTOR_CURRENT: parseInt(tempValue),
-  //     BATTERY_VOLTAGE: parseInt(tempValue),
-  //     THROTTLE_SIGNAL: parseInt(tempValue),
-  //     CONTROLLER_TEMPERATURE: parseInt(tempValue),
-  //     RTC: parseInt(tempValue),
-  //     PCB_TEMP: parseInt(tempValue)
-  //   };
-  // }, 100);
-  // // 수신된 데이터를 클라이언트에 즉시 전송
-  // socket.emit('dataReceived', dataWithKey);
-
-  // ESP32에서 데이터 수신 및 처리
-  socket.on('sendData', (receivedData) => {
-    try {
-      // receivedData가 28자리의 16진수 배열로 들어온다고 가정
-      const buffer = Buffer.from(receivedData, 'hex'); // receivedData를 Buffer로 변환 (16진수)
+    //   RPM: parseInt(tempValue),
+    //   MOTOR_CURRENT: parseInt(tempValue),
+    //   BATTERY_VOLTAGE: parseInt(tempValue),
+    //   THROTTLE_SIGNAL: parseInt(tempValue),
+    //   CONTROLLER_TEMPERATURE: parseInt(tempValue),
+    //   RTC: parseInt(tempValue),
+    //   PCB_TEMP: parseInt(tempValue)
+    // };
+    
+    
+    // setInterval(function() {
+      //   console.log('tempValue : ', tempValue);
+      //   console.table(dataWithKey);
+      //   saveToDynamoDB(dataWithKey);
+      //   tempValue++;
       
-      // 데이터를 파싱하여 10진수로 변환
-      const parsedData = parseData(buffer);
+      //   socket.emit('dataReceived', dataWithKey);
+      
+      //   dataWithKey = {
+        //     RPM: parseInt(tempValue),
+        //     MOTOR_CURRENT: parseInt(tempValue),
+        //     BATTERY_VOLTAGE: parseInt(tempValue),
+        //     THROTTLE_SIGNAL: parseInt(tempValue),
+        //     CONTROLLER_TEMPERATURE: parseInt(tempValue),
+        //     RTC: parseInt(tempValue),
+        //     PCB_TEMP: parseInt(tempValue)
+        //   };
+        // }, 100);
+        // // 수신된 데이터를 클라이언트에 즉시 전송
+        // socket.emit('dataReceived', dataWithKey);
+        
+        let tempValue = 2004;
+        const dataWithKey = {
+          RPM: parseInt(tempValue),
+          MOTOR_CURRENT: parseInt(tempValue),
+          BATTERY_VOLTAGE: parseInt(tempValue),
+          THROTTLE_SIGNAL: parseInt(tempValue),
+          CONTROLLER_TEMPERATURE: parseInt(tempValue),
+          RTC: parseInt(tempValue),
+          PCB_TEMP: parseInt(tempValue)
+        };
+        
+        // 수신된 데이터를 클라이언트에 즉시 전송
+        socket.emit('dataReceived', dataWithKey);
 
+        // ESP32에서 데이터 수신 및 처리
+        socket.on('sendData', (receivedData) => {
+          try {
+            // receivedData가 28자리의 16진수 배열로 들어온다고 가정
+            const buffer = Buffer.from(receivedData, 'hex'); // receivedData를 Buffer로 변환 (16진수)
+            
+            // 데이터를 파싱하여 10진수로 변환
+            const parsedData = parseData(buffer);
+            
       // 파싱된 데이터 출력
       console.log('Parsed Data:', parsedData);
 
