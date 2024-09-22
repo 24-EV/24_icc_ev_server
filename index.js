@@ -191,9 +191,8 @@ io.on('connection', (socket) => {
   //     PCB_TEMP: parseInt(tempValue)
   //   };
   // }, 100);
-  
-  // 수신된 데이터를 클라이언트에 즉시 전송
-  socket.emit('dataReceived', dataWithKey);
+  // // 수신된 데이터를 클라이언트에 즉시 전송
+  // socket.emit('dataReceived', dataWithKey);
 
   // ESP32에서 데이터 수신 및 처리
   socket.on('sendData', (receivedData) => {
