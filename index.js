@@ -19,7 +19,6 @@ const io = new Server(server, {
   transports: ['websocket', 'polling']
 });
 
-
 const port = 2004;
 
 // AWS SDK 설정
@@ -83,15 +82,20 @@ async function scanDynamoDB(startDate, endDate) {
     const command = new ScanCommand(params);
     const data = await dynamoDBClient.send(command);
 
+    if (!data.Items || data.Items.length === 0) {
+      console.log('조회된 데이터가 없습니다.');
+      return [];
+    }
+
     return data.Items.map(item => ({
-      timestamp: item.timestamp.S,
-      RPM: item.RPM.N,
-      MOTOR_CURRENT: item.MOTOR_CURRENT.N,
-      BATTERY_VOLTAGE: item.BATTERY_VOLTAGE.N,
-      THROTTLE_SIGNAL: item.THROTTLE_SIGNAL.N,
-      CONTROLLER_TEMPERATURE: item.CONTROLLER_TEMPERATURE.N,
-      SPEED: item.SPEED.N,
-      BATTERY_PERCENT: item.BATTERY_PERCENT.N
+      timestamp: item.timestamp?.S || 'N/A',
+      RPM: item.RPM?.N || '0',
+      MOTOR_CURRENT: item.MOTOR_CURRENT?.N || '0',
+      BATTERY_VOLTAGE: item.BATTERY_VOLTAGE?.N || '0',
+      THROTTLE_SIGNAL: item.THROTTLE_SIGNAL?.N || '0',
+      CONTROLLER_TEMPERATURE: item.CONTROLLER_TEMPERATURE?.N || '0',
+      SPEED: item.SPEED?.N || '0',
+      BATTERY_PERCENT: item.BATTERY_PERCENT?.N || '0'
     }));
   } catch (err) {
     console.error('DynamoDB 조회 중 오류 발생:', err);
@@ -122,28 +126,17 @@ async function generateExcel(data) {
   return workbook;
 }
 
-// 16진수를 거꾸로 배열하고 10진수로 변환하는 함수
-function parseData(buffer) {
-  const parsedData = {};
-
-  parsedData.RPM = buffer.length >= 2 ? parseInt(buffer.slice(0, 2).reverse().toString('hex'), 16) : 0;
-  parsedData.MOTOR_CURRENT = buffer.length >= 4 ? parseInt(buffer.slice(2, 4).reverse().toString('hex'), 16) : 0;
-  parsedData.BATTERY_VOLTAGE = buffer.length >= 6 ? parseInt(buffer.slice(4, 6).reverse().toString('hex'), 16) : 0;
-  parsedData.THROTTLE_SIGNAL = buffer.length >= 8 ? parseInt(buffer.slice(6, 8).reverse().toString('hex'), 16) : 0;
-  parsedData.CONTROLLER_TEMPERATURE = buffer.length >= 10 ? parseInt(buffer.slice(8, 10).reverse().toString('hex'), 16) : 0;
-  parsedData.SPEED = buffer.length >= 12 ? parseInt(buffer.slice(10, 12).reverse().toString('hex'), 16) : 0;
-  parsedData.BATTERY_PERCENT = buffer.length >= 14 ? parseInt(buffer.slice(12, 14).reverse().toString('hex'), 16) : 0;
-
-  return parsedData;
-}
-
-
 // 클라이언트로부터 요청 받은 기간 동안의 데이터를 조회하고 Excel로 변환하여 전달하는 엔드포인트
 app.post('/export-excel', async (req, res) => {
   const { startDate, endDate } = req.body;
 
   try {
     const data = await scanDynamoDB(startDate, endDate);
+
+    if (!data || data.length === 0) {
+      return res.status(404).send('해당 날짜 범위에 대한 데이터가 없습니다.');
+    }
+
     const workbook = await generateExcel(data);
 
     // 파일 전송
@@ -161,64 +154,30 @@ app.post('/export-excel', async (req, res) => {
 io.on('connection', (socket) => {
   console.log('사용자 연결됨:', socket.id);
 
-  // 속도 테스트 코드임. 주석이 되어라아
-  // let tempValue = 2004;
-  // let dataWithKey = {
-    //   RPM: parseInt(tempValue),
-    //   MOTOR_CURRENT: parseInt(tempValue),
-    //   BATTERY_VOLTAGE: parseInt(tempValue),
-    //   THROTTLE_SIGNAL: parseInt(tempValue),
-    //   CONTROLLER_TEMPERATURE: parseInt(tempValue),
-    //   RTC: parseInt(tempValue),
-    //   PCB_TEMP: parseInt(tempValue)
-    // };
-    
-    
-    // setInterval(function() {
-      //   console.log('tempValue : ', tempValue);
-      //   console.table(dataWithKey);
-      //   saveToDynamoDB(dataWithKey);
-      //   tempValue++;
-      
-      //   socket.emit('dataReceived', dataWithKey);
-      
-      //   dataWithKey = {
-        //     RPM: parseInt(tempValue),
-        //     MOTOR_CURRENT: parseInt(tempValue),
-        //     BATTERY_VOLTAGE: parseInt(tempValue),
-        //     THROTTLE_SIGNAL: parseInt(tempValue),
-        //     CONTROLLER_TEMPERATURE: parseInt(tempValue),
-        //     RTC: parseInt(tempValue),
-        //     PCB_TEMP: parseInt(tempValue)
-        //   };
-        // }, 100);
-        // // 수신된 데이터를 클라이언트에 즉시 전송
-        // socket.emit('dataReceived', dataWithKey);
-        
-        let tempValue = 2004;
-        const dataWithKey = {
-          timestamp : getKoreaTime(),
-          RPM: parseInt(tempValue),
-          MOTOR_CURRENT: parseInt(tempValue),
-          BATTERY_VOLTAGE: parseInt(tempValue),
-          THROTTLE_SIGNAL: parseInt(tempValue),
-          CONTROLLER_TEMPERATURE: parseInt(tempValue),
-          SPEED: parseInt(tempValue),
-          BATTERY_PERCENT: parseInt(tempValue)
-        };
-        
-        // 수신된 데이터를 클라이언트에 즉시 전송
-        socket.emit('dataReceived', dataWithKey);
+  let tempValue = 2004;
+  const dataWithKey = {
+    timestamp: getKoreaTime(),
+    RPM: parseInt(tempValue),
+    MOTOR_CURRENT: parseInt(tempValue),
+    BATTERY_VOLTAGE: parseInt(tempValue),
+    THROTTLE_SIGNAL: parseInt(tempValue),
+    CONTROLLER_TEMPERATURE: parseInt(tempValue),
+    SPEED: parseInt(tempValue),
+    BATTERY_PERCENT: parseInt(tempValue)
+  };
 
-        // ESP32에서 데이터 수신 및 처리
-        socket.on('sendData', (receivedData) => {
-          try {
-            // receivedData가 28자리의 16진수 배열로 들어온다고 가정
-            const buffer = Buffer.from(receivedData, 'hex'); // receivedData를 Buffer로 변환 (16진수)
-            
-            // 데이터를 파싱하여 10진수로 변환
-            const parsedData = parseData(buffer);
-            
+  // 수신된 데이터를 클라이언트에 즉시 전송
+  socket.emit('dataReceived', dataWithKey);
+
+  // ESP32에서 데이터 수신 및 처리
+  socket.on('sendData', (receivedData) => {
+    try {
+      // receivedData가 28자리의 16진수 배열로 들어온다고 가정
+      const buffer = Buffer.from(receivedData, 'hex'); // receivedData를 Buffer로 변환 (16진수)
+
+      // 데이터를 파싱하여 10진수로 변환
+      const parsedData = parseData(buffer);
+
       // 파싱된 데이터 출력
       console.log('Parsed Data:', parsedData);
 
