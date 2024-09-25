@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const ip = require('ip');
 const express = require('express');
 const { DynamoDBClient, ScanCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 const cors = require('cors');
@@ -10,14 +11,13 @@ const exceljs = require('exceljs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  pingTimeout: 60000,  // ping 타임아웃 20초로 늘림
+  pingTimeout: 25000,  // ping 타임아웃 20초로 늘림
   pingInterval: 25000,  // ping 간격 25초로 유지
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
-  transports: ['websocket'],
-  allowEIO3: true
+  transports: ['websocket']
 });
 
 const port = 2004;
@@ -152,8 +152,8 @@ app.post('/export-excel', async (req, res) => {
 });
 
 // Socket.IO 연결 이벤트
-io.on('connection', (socket) => {
-  console.log('사용자 연결됨:', socket.id);
+io.on('connection', function (socket) {
+  console.log(getKoreaTime(), '사용자 연결됨:', socket.id);
 
   let tempValue = 2004;
   const dataWithKey = {
@@ -170,6 +170,11 @@ io.on('connection', (socket) => {
   // 수신된 데이터를 클라이언트에 즉시 전송
   socket.emit('dataReceived', dataWithKey);
 
+  // 예시
+  socket.on('message', function(data) {
+    console.log(getKoreaTime(), '받은 메시지 : ', data);
+  })
+  
   // ESP32에서 데이터 수신 및 처리
   socket.on('sendData', (receivedData) => {
     try {
@@ -197,6 +202,13 @@ io.on('connection', (socket) => {
   socket.on('disconnect', (reason) => {
     console.log('사용자 연결 해제됨:', reason);
   });
+});
+
+app.get('/', function (req, res) {
+  // check sender ip
+  var senderip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log('Sender IP:', senderip);  // IP 주소 로그 출력
+  res.send('<h3>Hello world!</h3>');  // 클라이언트에게 응답 전송
 });
 
 // 서버 시작
