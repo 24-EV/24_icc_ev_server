@@ -10,13 +10,14 @@ const exceljs = require('exceljs');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  pingTimeout: 20000,  // ping 타임아웃 20초로 늘림
+  pingTimeout: 60000,  // ping 타임아웃 20초로 늘림
   pingInterval: 25000,  // ping 간격 25초로 유지
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket'],
+  allowEIO3: true
 });
 
 const port = 2004;

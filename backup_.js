@@ -1,43 +1,37 @@
-import { Server } from 'socket.io';
-
-/*****************************************************************************
- * server configurations
- ****************************************************************************/
-const PORT = 2004; // 서버가 열릴 포트
-
-/*****************************************************************************
- * socket server configurations
- ****************************************************************************/
-
-const io = new Server(PORT, {
-  pingInterval: 5000,  // Ping 간격
-  pingTimeout: 20000,  // Ping Timeout
-  cors: {
-    origin: "*",  // 모든 출처 허용
-    methods: ["GET", "POST"]
+const ip = require("ip");
+var app = require('express')();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server, {
+//  pingTimeout: 25000,
+//  pingInterval: 20000, 
+ cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
   },
-  transports: ['websocket', 'polling'], // WebSocket과 폴링 방식을 모두 허용
-  allowEIO3: true
+  transports: ['websocket', 'polling'],  // 폴링 및 웹소켓 허용
+});
+var port = 2004; // || 연산자로 기본 포트 설정
+
+app.get('/', function (req, res) {
+    // check sender ip
+    var senderip = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // >    res.send('<h1>Hello world</h1>');
 });
 
+function getKoreaTime() {
+  const koreaTime = new Date(Date.now() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+  return koreaTime.toISOString().replace('T', ' ').split('.')[0];
+}
 
+io.on('connection', function (socket) {
+    console.log(getKoreaTime(), 'Client connected');
+    socket.on('message', function (data) {
+        console.log(getKoreaTime(), 'Message received: ', data);
+    });
+    socket.on('disconnect', function () {
+        console.log(getKoreaTime(), 'Client disconnected');
+    });
+});
 
-console.log(`Server is running on port ${PORT}`);
-
-/*****************************************************************************
- * socket event handlers
- ****************************************************************************/
-io.sockets.on('connection', socket => {
-  console.log('A device connected:', socket.id);
-
-  // on DEVICE DISCONNECT
-  socket.on('disconnect', reason => {
-    console.log('A device disconnected:', socket.id, 'Reason:', reason);
-  });
-
-  // on telemetry report (ESP32가 데이터를 보낼 때 사용하는 이벤트)
-  socket.on('tlog', data => {
-    console.log('Telemetry data received:', data);
-    // 필요하다면 여기서 데이터를 처리할 수 있습니다.
-  });
+server.listen(port, () => {
+    console.log('Server is running on port', port);
 });
