@@ -123,7 +123,6 @@ https://github.com/nitepp04/24_icc_ev_server
         
         ![Image](https://github.com/user-attachments/assets/caa70f59-b5e4-473e-a662-5e3402c1dd84)
         
-        ![image.png](attachment:99ef6fcb-7a98-4f1e-a893-334b351dbae3:image.png)
        ![Image](https://github.com/user-attachments/assets/267127c2-1814-49ec-ad2c-72bafcf5a84b)
         
     3. 사용자 → 사용자 생성 → 이름 입력 후 다음
@@ -134,9 +133,8 @@ https://github.com/nitepp04/24_icc_ev_server
         
     5. 생성된 사용자 클릭 후 액세스 키 만들기 → 사용 사례 아무거나 선택 후 및에 동의 후 다음 → 입력 없이 액세스 키 만들기
         
-       ![image](https://github.com/user-attachments/assets/a32ef3c7-2a17-4b44-852b-6a6e57f41bf9)
+       ![Image](https://github.com/user-attachments/assets/c95e7e25-d6e3-4cd1-8d70-02934c0ec71c)
 
-        
     7. 생성된 액세스 키, 비밀 액세스 키 복사 후 .csv 파일 다운로드하기. (다시 찾을 수 없기에 잃어 버리면 안 됨. 잃어버리면 새 사용자 만들어야 함.)
     8. VS 코드에서 전에 생성한 .env 파일에 다음과 같이 입력 후 저장
         
@@ -145,19 +143,19 @@ https://github.com/nitepp04/24_icc_ev_server
         DYNAMODB_SECRET_ACCESS_KEY=비밀액세스키
         ```
         
-       ![image](https://github.com/user-attachments/assets/088f9537-fde2-46d0-bfa0-7fd53cca89db)
+        ![Image](https://github.com/user-attachments/assets/7cb1e36d-cc4d-46bf-bf46-917e61323a64)
 
         
 5. 로컬에서 서버 실행해보기
     1. VS 코드에서 클론한 프로젝트를 연 후, Ctrl + Shift + ` 를 눌러 터미널 열기
     2. node index.js 입력하여 서버 실행
         
-       ![image](https://github.com/user-attachments/assets/fe2ba544-b447-4d50-957c-2e207daafa22)
+       ![Image](https://github.com/user-attachments/assets/2cf0aabd-88a8-4767-864b-25f5fcd62c99)
 
         
     4. index.js 에 입력된 포트 번호 확인 후 브라우저 주소창에 [localhost:2004](http://localhost:2004) 또는 내부.아이피.주.소:2004 입력 시 아래 화면이 뜬다면 로컬 환경에서 서버 구동 성공
         
-       ![image](https://github.com/user-attachments/assets/9bc29eae-5b67-4d1f-9a3e-114758de5a8f)
+       ![Image](https://github.com/user-attachments/assets/e9fa765c-4dde-40c2-8f0f-02ed4633a7a7)
 
         
         1. 클론한 서버 코드에 기재된 포트 번호는 2004. 변경하여도 무방함.
@@ -167,7 +165,7 @@ https://github.com/nitepp04/24_icc_ev_server
         1. SK 공유기 포트포워딩 이런 식으로 검색하면 됨
         2. 나빌레관 115호 ICC 동방의 경우 시설 관리팀에 문의하여 받아와야 하는 걸로 알아요
         
-        ![image](https://github.com/user-attachments/assets/d0c41248-6ce2-4081-a7f4-708d10689913)
+        ![Image](https://github.com/user-attachments/assets/41a485ce-a4e7-418c-8bcf-fb1ad2af7ece)
 
         
     3. 포트 포워드 또는 포트 포워딩 항목 찾기
@@ -184,7 +182,7 @@ https://github.com/nitepp04/24_icc_ev_server
             - 예를 들어 내 퍼블릭 아이피 주소가 111.1.1.1이고, 외부 포트 3000 ~ 3003, 내부 포트 2004로 설정 후 포트포워딩을 하였다.
             - 이때 내 컴퓨터에서 내가 2004번 포트에 어떤 프로그램을 실행시킬 때, 누구든지 111.1.1.1:3000~3003을 입력하여 내 프로그램에 접속할 수 있다.
                 
-                ![image](https://github.com/user-attachments/assets/88a1b1ee-1f61-49c7-a3a5-a280a339e6ee)
+                ![Image](https://github.com/user-attachments/assets/eabc5654-825f-44a7-8231-5c972a7195df)
 
                 
     4. 완료되었다면 자신의 외부 아이피 주소:외부포트 를 입력하여 로컬에서 실행한 환경과 같은 화면이 뜨는지 확인해보자.
@@ -197,7 +195,7 @@ https://github.com/nitepp04/24_icc_ev_server
     2. 인스턴스 → 인스턴스 시작
     3. Amazon Linux 또는 Ubuntu 선택
         
-        ![image](https://github.com/user-attachments/assets/8b6126d9-c4ee-44e2-889e-ff83eec9d34d)
+        ![Image](https://github.com/user-attachments/assets/679b38f1-3a9a-4686-8295-611a5054f2bb)
 
     5. 인스턴스 유형 [t3.mini](http://t3.mini) 이상 추천 
         1. t3.micro (프리티어 인스턴스 구동 시 인스턴스 사양 한계치 바로 넘어섬)
@@ -256,7 +254,7 @@ https://github.com/nitepp04/24_icc_ev_server
         4. IdentityFile 뒤에는 키페어 주소
         5. 변경 완료 시 Ctrl + S 저장
             
-            ![image](https://github.com/user-attachments/assets/505eb8ed-7b4b-4e69-844a-b6ebe999a7ac)
+            ![Image](https://github.com/user-attachments/assets/aa6d1a39-a9dc-4599-975f-f6de39358a1a)
 
             
     7. Ctrl + Shift + p → Connect to Host… → Linux
