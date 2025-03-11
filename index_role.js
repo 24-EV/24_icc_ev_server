@@ -26,11 +26,7 @@ const port = 2004;
 
 // AWS SDK 설정. IAM 역할 할당이 불가능한 환경에서 사용.
 const dynamoDBClient = new DynamoDBClient({
-  region: 'ap-northeast-2',
-  credentials: {
-    accessKeyId: process.env.DYNAMODB_ACCESS_KEY,
-    secretAccessKey: process.env.DYNAMODB_SECRET_ACCESS_KEY
-  }
+  region: 'ap-northeast-2'
 });
 
 app.use(cors());
