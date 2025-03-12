@@ -6,9 +6,11 @@
 
 ### 깃허브 레포지토리 주소
 
-https://github.com/nitepp04/24_icc_ev_client
+클라이언트 : https://github.com/nitepp04/24_icc_ev_client
 
-https://github.com/nitepp04/24_icc_ev_server
+서버 : https://github.com/nitepp04/24_icc_ev_server
+
+펌웨어 : https://github.com/nitepp04/24_icc_ev_firmware
 
 ## 주요 기능
 
@@ -87,7 +89,11 @@ https://github.com/nitepp04/24_icc_ev_server
         
     3. 자신의 깃허브 레포지토리에 포크된 레포지토리가 잘 생성되었나 체크
     
-
+---
+### 백엔드
+ 서버를 구동할 수 있는 두가지 방법
+ - 포트포워딩
+ - AWS EC2
 ### 포트포워딩 (사설 공유기 있다면 이 방법 추천)
 
 1. git 설치 https://sfida.tistory.com/46
@@ -187,7 +193,7 @@ https://github.com/nitepp04/24_icc_ev_server
                 
     4. 완료되었다면 자신의 외부 아이피 주소:외부포트 를 입력하여 로컬에서 실행한 환경과 같은 화면이 뜨는지 확인해보자.
 7. 가상의 데이터를 입력하여 DB에 데이터가 정상적으로 들어가는지, 프론트엔드와의 연결은 원활한지 등의 테스트 진행해보면 좋습니다.
-
+---
 ### AWS EC2에서 구동
 
 1. AWS EC2 인스턴스 생성
@@ -313,49 +319,3 @@ https://github.com/nitepp04/24_icc_ev_server
     5. 작업 → 보안 → IAM 역할 수정 →  직전에 생성했던 IAM 역할 선택 후 IAM 역할 업데이트
         1. 만약 EC2가 아닌 개인 노트북 등에서 DynamoDB를 연결하고 싶은 경우 포트포워딩에서의 DynamoDB 설정 참고
 5. 가상의 데이터를 입력하여 DB에 데이터가 정상적으로 들어가는지, 프론트엔드와의 연결은 원활한지 등의 테스트 진행해보면 좋습니다.
-
----
-
-### 프론트엔드
-
-1. Vercel 배포
-    1.  [Vercel.com](http://Vercel.com) 가입 후 Add New Project
-    2. Import Git Repository
-    3. Continue with GitHub → Import Git Repository → 포크한 레포지토리 선택 → Import
-        
-        ![image](https://github.com/user-attachments/assets/6f613039-7a24-486c-a57a-930b10b3f3b3)
-
-        
-    5. 원하는 프로젝트 명 입력, Framework Preset → Create React App 선택 → Deploy
-        
-       ![image](https://github.com/user-attachments/assets/e1cb14b4-94b4-4885-a81f-2534003a732d)
-
-        
-    7. 배포 완료
-        1. Domains의 주소들이 배포된 프론트엔드 주소임
-        
-        ![image](https://github.com/user-attachments/assets/b36e2046-ee4a-45bb-b8c9-1166da900471)
-
-        
-2. 카카오맵 API 키 발급
-    1. 카카오맵 API 접속 : https://apis.map.kakao.com/ → 우측 상단 APP KEY 발급 → 로그인
-    2. 상단 메뉴의 내 애플리케이션 → 애플리케이션 추가하기 → 앱 이름 원하는 거, 나머지 아무거나, → 정책 동의 후 저장
-    3. 만들어진 앱 들어가서 왼쪽 메뉴바의 플랫폼 → 웹 플랫폼 등록 → 버셀 도메인 주소 붙여넣기 → 저장
-        1. 로컬에서도 원한다면 엔터 눌러서 localhost:포트번호
-    4. 왼쪽 메뉴바의 앱 권한 신청 → 앱 권한 → 카카오맵 권한 신청
-        1. 신청 불필요 뜨면 넘어가기
-    5. 왼쪽 메뉴바의 엡 키 → JavaScript 키 복사
-3. 버셀 환경변수 설정
-    1. 버셀에서 이전에 배포한 프로젝트로 들어와 상단의 Settings → Environment Variables → Key - Value 항목에 다음과 같이 입력
-        
-        ```nasm
-        KEY | VALUE
-        REACT_APP_KAKAO | 앱 키 입력
-        REACT_APP_SERVER_URL | 서버 주소 입력
-        ```
-        
-        ![image](https://github.com/user-attachments/assets/8c894b38-8b28-445d-9d9b-a32741dad5c3)
-
-        
-    3. KEY 값은 임의로 바꾸면 안 됨. 바꾸려면 코드를 수정해야 함.
-    4. 정상 동작하는지 확인
