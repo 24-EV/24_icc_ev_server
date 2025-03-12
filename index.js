@@ -1,5 +1,3 @@
-// 귀찮아서 하나에 때려 박음
-
 const ip = require('ip');
 const express = require('express');
 const cors = require('cors');
@@ -10,6 +8,7 @@ const { saveToDynamoDB, scanDynamoDB } = require('./src/services/dynamoDBService
 const { PORT } = require('./src/config/envConfig.js');
 const { createSocketServer } = require('./src/config/socketConfig.js');
 const { initSocket } = require('./src/services/socketService.js');
+const { initRouter } = require('./src/routes/apiRoutes.js');
 
 // express 서버 생성
 const app = express();
@@ -19,13 +18,14 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-// socket.io 서버 생성 및 이벤트 핸들러 설정
+// socket.io 서버 생성 및 소켓, REST API 이벤트 핸들러 설정
 const io = createSocketServer(server);
 initSocket(io);
-
+initRouter(app);
 
 // 서버 시작
-server.listen(PORT, () => {
+// '0.0.0.0' 으로 바인딩 해야 로컬 말고 다른 데서도 된다고 함.
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`${PORT} 포트에서 서버가 시작되었습니다.`);
   console.log(getKoreaTime());
 });

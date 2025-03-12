@@ -8,24 +8,24 @@ function initSocket(io) {
     io.on('connection', function (socket) {
         console.log(getKoreaTime(), '사용자 연결됨:', socket.id);
 
-        // // 서버 기능 테스트용
-        // setInterval(() => {
-        //   let tempValue1 = Math.floor(Math.random() * 1000);
-        //   let tempValue2 = Math.floor(Math.random() * 1000);
-        //   const dataWithKey = {
-        //     timestamp: getKoreaTime(),
-        //     RPM: parseInt(tempValue1),
-        //     MOTOR_CURRENT: parseInt(tempValue1),
-        //     BATTERY_VOLTAGE: parseInt(tempValue2),
-        //     THROTTLE_SIGNAL: parseInt(tempValue1),
-        //     CONTROLLER_TEMPERATURE: parseInt(tempValue2),
-        //     SPEED: parseInt(tempValue1),
-        //     BATTERY_PERCENT: parseInt(tempValue2)
-        //   };
+        // 서버 기능 테스트용
+        setInterval(() => {
+          let tempValue1 = Math.floor(Math.random() * 1000);
+          let tempValue2 = Math.floor(Math.random() * 1000);
+          const dataWithKey = {
+            timestamp: getKoreaTime(),
+            RPM: parseInt(tempValue1),
+            MOTOR_CURRENT: parseInt(tempValue1),
+            BATTERY_VOLTAGE: parseInt(tempValue2),
+            THROTTLE_SIGNAL: parseInt(tempValue1),
+            CONTROLLER_TEMPERATURE: parseInt(tempValue2),
+            SPEED: parseInt(tempValue1),
+            BATTERY_PERCENT: parseInt(tempValue2)
+          };
 
-        //   // 수신된 데이터를 클라이언트에 즉시 전송
-        //   socket.emit('dataReceived', dataWithKey);
-        // }, 1000);
+          // 수신된 데이터를 클라이언트에 즉시 전송
+          socket.emit('dataReceived', dataWithKey);
+        }, 1000);
 
 
 
