@@ -1,4 +1,5 @@
 // 귀찮아서 하나에 때려 박음
+// IAM 역할 할당 코드
 
 require('dotenv').config();
 
