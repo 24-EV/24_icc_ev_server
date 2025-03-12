@@ -150,7 +150,7 @@
         ```
         
         ![Image](https://github.com/user-attachments/assets/7cb1e36d-cc4d-46bf-bf46-917e61323a64)
-
+    9. src/services/dynamoDBServices.js 에서 getDynamoDBClient함수의 인자를 'key'로 설정 (작음따옴표까지 그대로)
         
 5. 로컬에서 서버 실행해보기
     1. VS 코드에서 클론한 프로젝트를 연 후, Ctrl + Shift + ` 를 눌러 터미널 열기
@@ -318,4 +318,5 @@
     4. AWS EC2 → 이전에 생성했던 서버용 인스턴스 진입
     5. 작업 → 보안 → IAM 역할 수정 →  직전에 생성했던 IAM 역할 선택 후 IAM 역할 업데이트
         1. 만약 EC2가 아닌 개인 노트북 등에서 DynamoDB를 연결하고 싶은 경우 포트포워딩에서의 DynamoDB 설정 참고
+    6. src/services/dynamoDBServices.js 에서 getDynamoDBClient함수의 인자를 'role'로 설정 (작음따옴표까지 그대로)
 5. 가상의 데이터를 입력하여 DB에 데이터가 정상적으로 들어가는지, 프론트엔드와의 연결은 원활한지 등의 테스트 진행해보면 좋습니다.

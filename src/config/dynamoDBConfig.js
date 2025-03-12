@@ -3,7 +3,7 @@ const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const envConfig = require('./envConfig');
 
 // AWS DynamoDB Config 객체. IAM 역할 할당한 코드는 role, 안 한 건 key로
-module.exports = {
+const dbClient = {
     role: new DynamoDBClient({
         region: 'ap-northeast-2'
     }),
@@ -15,3 +15,9 @@ module.exports = {
         }
     }),
 };
+
+function getDynamoDBClient(mode = 'key') {
+    return dbClient[mode];
+}
+
+module.exports = { getDynamoDBClient }

@@ -1,5 +1,7 @@
 const { ScanCommand, PutItemCommand } = require('@aws-sdk/client-dynamodb');
-const { dynamoDBClient } = require('../config/dynamoDBConfig.js');
+const { getDynamoDBClient } = require('../config/dynamoDBConfig.js');
+
+const dynamoDBClient = getDynamoDBClient('key'); // IAM 역할 할당 시 'key' -> 'role' 로 변경
 
 // DynamoDB에 데이터를 저장하는 함수
 async function saveToDynamoDB(data) {
