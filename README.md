@@ -159,7 +159,7 @@
        ![Image](https://github.com/user-attachments/assets/2cf0aabd-88a8-4767-864b-25f5fcd62c99)
 
         
-    4. index.js 에 입력된 포트 번호 확인 후 브라우저 주소창에 [localhost:2004](http://localhost:2004) 또는 내부.아이피.주.소:2004 입력 시 아래 화면이 뜬다면 로컬 환경에서 서버 구동 성공
+    4. index.js 에 입력된 포트 번호 확인 후 브라우저 주소창에 [localhost:2004/api/](http://localhost:2004/api/) 또는 내부.아이피.주.소:2004/api/ 입력 시 아래 화면이 뜬다면 로컬 환경에서 서버 구동 성공
         
        ![Image](https://github.com/user-attachments/assets/e9fa765c-4dde-40c2-8f0f-02ed4633a7a7)
 
