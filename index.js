@@ -25,7 +25,12 @@ initRouter(app);
 
 // 서버 시작
 // '0.0.0.0' 으로 바인딩 해야 로컬 말고 다른 데서도 된다고 함.
-server.listen(PORT, '0.0.0.0', () => {
+// server.listen(PORT, '192.168.45.169', () => {
+//   console.log(`${PORT} 포트에서 서버가 시작되었습니다.`);
+//   console.log(getKoreaTime());
+// });
+
+server.listen(PORT, () => {
   console.log(`${PORT} 포트에서 서버가 시작되었습니다.`);
   console.log(getKoreaTime());
 });

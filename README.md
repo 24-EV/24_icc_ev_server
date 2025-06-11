@@ -88,7 +88,26 @@
         ![Image](https://github.com/user-attachments/assets/764a0d09-5010-47f1-bfcc-c2e1e4bc7bda)
         
     3. 자신의 깃허브 레포지토리에 포크된 레포지토리가 잘 생성되었나 체크
-    
+
+5. DynamoDB 연결
+    1. AWS DynamoDB → 테이블 생성 → 테이블 이름 및 파티션 키 설정 후 테이블 생성
+        
+        ![Image](https://github.com/user-attachments/assets/caa70f59-b5e4-473e-a662-5e3402c1dd84)
+        
+       ![Image](https://github.com/user-attachments/assets/267127c2-1814-49ec-ad2c-72bafcf5a84b)
+        
+    2. 사용자 → 사용자 생성 → 이름 입력 후 다음
+    3. 직접 정책 연결 → AmazonDynamoDBFullAccess 선택 후 다음 → 사용자 생성
+        
+       ![image](https://github.com/user-attachments/assets/1f70c348-7c46-4c93-91e5-53533b4c8758)
+
+        
+    4. 생성된 사용자 클릭 후 액세스 키 만들기 → 사용 사례 아무거나 선택 후 및에 동의 후 다음 → 입력 없이 액세스 키 만들기
+        
+       ![Image](https://github.com/user-attachments/assets/c95e7e25-d6e3-4cd1-8d70-02934c0ec71c)
+
+    5. 생성된 액세스 키, 비밀 액세스 키 복사 후 .csv 파일 다운로드하기. (다시 찾을 수 없기에 잃어 버리면 안 됨. 잃어버리면 새 사용자 만들어야 함.)
+
 ---
 ### 백엔드
 서버를 실행시킬 두가지 방법
@@ -125,24 +144,7 @@
             ![Image](https://github.com/user-attachments/assets/c0c2292e-e8b8-4e80-8387-2bf34872a436)
             
 4. DynamoDB 연결
-    1. AWS DynamoDB → 테이블 생성 → 테이블 이름 및 파티션 키 설정 후 테이블 생성
-        
-        ![Image](https://github.com/user-attachments/assets/caa70f59-b5e4-473e-a662-5e3402c1dd84)
-        
-       ![Image](https://github.com/user-attachments/assets/267127c2-1814-49ec-ad2c-72bafcf5a84b)
-        
-    3. 사용자 → 사용자 생성 → 이름 입력 후 다음
-    4. 직접 정책 연결 → AmazonDynamoDBFullAccess 선택 후 다음 → 사용자 생성
-        
-       ![image](https://github.com/user-attachments/assets/1f70c348-7c46-4c93-91e5-53533b4c8758)
-
-        
-    5. 생성된 사용자 클릭 후 액세스 키 만들기 → 사용 사례 아무거나 선택 후 및에 동의 후 다음 → 입력 없이 액세스 키 만들기
-        
-       ![Image](https://github.com/user-attachments/assets/c95e7e25-d6e3-4cd1-8d70-02934c0ec71c)
-
-    7. 생성된 액세스 키, 비밀 액세스 키 복사 후 .csv 파일 다운로드하기. (다시 찾을 수 없기에 잃어 버리면 안 됨. 잃어버리면 새 사용자 만들어야 함.)
-    8. VS 코드에서 전에 생성한 .env 파일에 다음과 같이 입력 후 저장
+    1. VS 코드에서 전에 생성한 .env 파일에 다음과 같이 입력 후 저장
         
         ```nasm
         DYNAMODB_ACCESS_KEY=액세스키
@@ -150,11 +152,14 @@
         ```
         
         ![Image](https://github.com/user-attachments/assets/7cb1e36d-cc4d-46bf-bf46-917e61323a64)
-    9. src/services/dynamoDBServices.js 에서 getDynamoDBClient함수의 인자를 'key'로 설정 (작음따옴표까지 그대로)
+    2. src/services/dynamoDBServices.js 에서 getDynamoDBClient함수의 인자를 'key'로 설정 (작음따옴표까지 그대로)
         
 5. 로컬에서 서버 실행해보기
     1. VS 코드에서 클론한 프로젝트를 연 후, Ctrl + Shift + ` 를 눌러 터미널 열기
-    2. node index.js 입력하여 서버 실행
+
+    2. npm install 입력하여 의존성 설치
+
+    3. node index.js 입력하여 서버 실행
         
        ![Image](https://github.com/user-attachments/assets/2cf0aabd-88a8-4767-864b-25f5fcd62c99)
 
