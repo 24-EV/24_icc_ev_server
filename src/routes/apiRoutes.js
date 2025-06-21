@@ -6,8 +6,39 @@ const { generateExcel } = require("../utils/Utils.js");
 function initRouter(app) {
   app.use("/api", router);
 
-  // 클라이언트로부터 요청 받은 기간 동안의 데이터를 조회하고 Excel로 변환하여 전달하는 엔드포인트
-  router.post("/export-excel", async (req, res) => {
+  /**
+   * @swagger
+   * /api/export-excel:
+   *   post:
+   *     summary: 기간 내 데이터 엑셀 다운로드
+   *     description: 시작일~종료일 데이터 엑셀 파일로 반환
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               startDate:
+   *                 type: string
+   *                 example: '2024-01-01'
+   *               endDate:
+   *                 type: string
+   *                 example: '2024-01-31'
+   *     responses:
+   *       200:
+   *         description: 엑셀 파일 반환
+   *         content:
+   *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+   *             schema:
+   *               type: string
+   *               format: binary
+   *       404:
+   *         description: 데이터 없음
+   *       500:
+   *         description: 서버 오류
+   */
+  router.post("/export-excel", async (req, res, next) => {
     const { startDate, endDate } = req.body;
 
     try {
@@ -28,12 +59,20 @@ function initRouter(app) {
       await workbook.xlsx.write(res);
       res.end();
     } catch (error) {
-      console.error("엑셀 파일 생성 중 오류 발생:", error);
-      res.status(500).send("엑셀 파일 생성 중 오류가 발생했습니다.");
+      // 에러 미들웨어로 전달
+      next(error);
     }
   });
 
-  // 기본 엔드포인트
+  /**
+   * @swagger
+   * /api/:
+   *   get:
+   *     summary: 서버 상태 확인
+   *     responses:
+   *       200:
+   *         description: 서버 상태 메시지 반환
+   */
   router.get("/", function (req, res) {
     // check sender ip
     var senderip =
