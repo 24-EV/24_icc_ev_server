@@ -1,5 +1,6 @@
 // 테스트했던 백업코드입니다.
 // 아아ㅏ
+// 25 컨트롤러 관련 개선 코드 없음
 
 const ip = require("ip");
 var app = require('express')();

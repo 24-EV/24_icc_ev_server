@@ -22,8 +22,8 @@ const { initSocket } = require("./src/services/socketService.js");
 const { initRouter } = require("./src/routes/apiRoutes.js");
 
 // 환경별 설정 분리 (예시: NODE_ENV)
-const ENV = process.env.NODE_ENV || "development";
-console.log(`현재 환경: ${ENV}`);
+const NODE_ENV = process.env.NODE_ENV || "development";
+console.log(`현재 환경: ${NODE_ENV}`);
 
 // express 서버 생성
 const app = express();
@@ -105,7 +105,7 @@ app.use((err, req, res, next) => {
   logger.error("에러 발생: " + err.stack);
   res.status(err.status || 500).json({
     message: err.message || "서버 내부 오류",
-    error: ENV === "development" ? err : {},
+    error: NODE_ENV === "development" ? err : {},
   });
 });
 
