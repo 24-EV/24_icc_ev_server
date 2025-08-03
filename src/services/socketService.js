@@ -1,5 +1,4 @@
-import DataFormat from "../utils/DataFormat.js";
-
+const DataFormat = require("../utils/DataFormat.js");
 const { parseData, getKoreaTime } = require("../utils/Utils.js");
 const { saveToDynamoDB } = require("../services/dynamoDBService.js");
 const { createSocketServer } = require("../config/socketConfig.js");
@@ -12,9 +11,27 @@ function initSocket(io) {
   io.on("connection", function (socket) {
     console.log(getKoreaTime(), "사용자 연결됨:", socket.id);
 
+    socket.emit("serverControllerVersion");
+    socket.on("clientControllerVersion", function (version) {
+      const errorMessage =
+        "서버-클라이언트 간 컨트롤러 버전 불일치." +
+        `\n클라이언트 : ${version}             서버 : ${CONTROLLER_VERSION}` +
+        "\n버전을 맞춰주세요.";
+      const correctMessage =
+        "컨트롤러 버전 일치" + `\n클라이언트, 서버 : ${version}`;
+
+      if (version !== CONTROLLER_VERSION) {
+        console.warn(errorMessage);
+        socket.emit("error", errorMessage);
+      } else {
+        console.warn(correctMessage);
+        socket.emit("controllerVersionOK", correctMessage);
+      }
+    });
+
     // 서버 기능 테스트용
     setInterval(() => {
-      dataWithKey = socketTester();
+      const dataWithKey = socketTester();
 
       // 수신된 데이터를 클라이언트에 즉시 전송
       socket.emit("dataReceived", dataWithKey);
@@ -73,7 +90,7 @@ function socketTester(version = CONTROLLER_VERSION) {
     4: Math.floor(Math.random() * 1000),
   };
 
-  const dataWithKey = { timestamp: getKoreaTime(), ...DataFormat };
+  const dataWithKey = { timestamp: getKoreaTime(), ...DataFormat[version] };
 
   Object.keys(dataWithKey).forEach((key) => {
     if (key === "timestamp") {

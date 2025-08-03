@@ -40,4 +40,4 @@ const DataFormat = {
   },
 };
 
-export default DataFormat;
+module.exports = DataFormat;

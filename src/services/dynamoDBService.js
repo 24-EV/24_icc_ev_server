@@ -1,5 +1,4 @@
-import { version } from "react";
-import DataFormat from "../utils/DataFormat.js";
+const DataFormat = require("../utils/DataFormat.js");
 
 const { ScanCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { getDynamoDBClient } = require("../config/dynamoDBConfig.js");

@@ -1,4 +1,4 @@
-import parsedDataMap from "./DataFormat";
+const parsedDataMap = require("./DataFormat");
 
 const CONTROLLER_VERSION = process.env.CONTROLLER_VERSION || 24;
 
