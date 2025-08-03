@@ -1,3 +1,5 @@
+import DataFormat from "../utils/DataFormat.js";
+
 const { parseData, getKoreaTime } = require("../utils/Utils.js");
 const { saveToDynamoDB } = require("../services/dynamoDBService.js");
 const { createSocketServer } = require("../config/socketConfig.js");
@@ -57,56 +59,31 @@ function initSocket(io) {
   });
 }
 
-// 주 함수 제외하고 가독성을 위해 뒤로 치움.
-
-function socketTester24Controller() {
-  let tempValue1 = Math.floor(Math.random() * 1000);
-  let tempValue2 = Math.floor(Math.random() * 1000);
-  let tempValue3 = Math.floor(Math.random() * 1000);
-  const dataWithKey = {
-    timestamp: getKoreaTime(),
-    RPM: parseInt(tempValue2),
-    MOTOR_CURRENT: parseInt(tempValue2),
-    BATTERY_VOLTAGE: parseInt(tempValue1),
-    THROTTLE_SIGNAL: parseInt(tempValue1),
-    CONTROLLER_TEMPERATURE: parseInt(tempValue3),
-    SPEED: parseInt(tempValue1),
-    BATTERY_PERCENT: parseInt(tempValue3),
-  };
-
-  return dataWithKey;
-}
-
-function socketTester25Controller() {
-  let tempValue1 = Math.floor(Math.random() * 1000);
-  let tempValue2 = Math.floor(Math.random() * 1000);
-  let tempValue3 = Math.floor(Math.random() * 1000);
-  const dataWithKey = {
-    timestamp: getKoreaTime(),
-    RPM: parseInt(tempValue2),
-    MOTOR_CURRENT: parseInt(tempValue2),
-    BATTERY_VOLTAGE: parseInt(tempValue1),
-    THROTTLE_SIGNAL: parseInt(tempValue1),
-    CONTROLLER_TEMPERATURE: parseInt(tempValue3),
-    SPEED: parseInt(tempValue1),
-    BATTERY_PERCENT: parseInt(tempValue3),
-  };
-
-  return dataWithKey;
-}
-
-const socketTesterMap = {
-  24: socketTester24Controller,
-  25: socketTester25Controller,
-};
-
+// 연결 테스트 함수. 서버에서 랜덤값을 만들어 보냄.
 function socketTester(version = CONTROLLER_VERSION) {
-  const func = socketTester[version];
-  if (!func) {
+  if (!DataFormat[version]) {
     throw new Error(`지원하지 않는 버전입니다. : ${version}`);
   }
 
-  return func();
+  const tempValue = {
+    0: Math.floor(Math.random() * 1000),
+    1: Math.floor(Math.random() * 1000),
+    2: Math.floor(Math.random() * 1000),
+    3: Math.floor(Math.random() * 1000),
+    4: Math.floor(Math.random() * 1000),
+  };
+
+  const dataWithKey = { timestamp: getKoreaTime(), ...DataFormat };
+
+  Object.keys(dataWithKey).forEach((key) => {
+    if (key === "timestamp") {
+      return;
+    }
+
+    dataWithKey[key] = parseInt(tempValue[Math.floor(Math.random() * 5)]);
+  });
+
+  return dataWithKey;
 }
 
 module.exports = { initSocket };
