@@ -1,9 +1,8 @@
-const DataFormat = require("../constants/DataFormat.js");
-const { parseData, getKoreaTime } = require("../utils/Utils.js");
+const { parseData, getKoreaTime } = require("../utils/utils.js");
 const { saveToDynamoDB } = require("../services/dynamoDBService.js");
 const { createSocketServer } = require("../config/socketConfig.js");
-
-const CONTROLLER_VERSION = process.env.CONTROLLER_VERSION || 24;
+const { CONTROLLER_VERSION } = require("../config/envConfig.js");
+const dataFormat = require("../constants/dataFormat.js");
 
 // 소켓 이벤트 핸들러
 function initSocket(io) {
@@ -79,7 +78,7 @@ function initSocket(io) {
 
 // 연결 테스트 함수. 서버에서 랜덤값을 만들어 보냄.
 function socketTester(version = CONTROLLER_VERSION) {
-  if (!DataFormat[version]) {
+  if (!dataFormat[version]) {
     throw new Error(`지원하지 않는 버전입니다. : ${version}`);
   }
 
@@ -91,7 +90,7 @@ function socketTester(version = CONTROLLER_VERSION) {
     4: Math.floor(Math.random() * 1000),
   };
 
-  const dataWithKey = { timestamp: getKoreaTime(), ...DataFormat[version] };
+  const dataWithKey = { timestamp: getKoreaTime(), ...dataFormat[version] };
 
   Object.keys(dataWithKey).forEach((key) => {
     if (key === "timestamp") {

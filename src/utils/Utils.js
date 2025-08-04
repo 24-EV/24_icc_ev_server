@@ -1,6 +1,5 @@
-const parsedDataMap = require("../constants/dataFormat");
-
-const CONTROLLER_VERSION = process.env.CONTROLLER_VERSION || 24;
+const { CONTROLLER_VERSION } = require("../config/envConfig.js");
+const parsedDataMap = require("../constants/dataFormat.js");
 
 // 현재 한국 시간 리턴
 function getKoreaTime() {

@@ -11,7 +11,7 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const winston = require("winston");
 
-const { parseData, getKoreaTime } = require("./src/utils/Utils.js");
+const { parseData, getKoreaTime } = require("./src/utils/utils.js");
 const {
   saveToDynamoDB,
   scanDynamoDB,
@@ -20,10 +20,9 @@ const { PORT } = require("./src/config/envConfig.js");
 const { createSocketServer } = require("./src/config/socketConfig.js");
 const { initSocket } = require("./src/services/socketService.js");
 const { initRouter } = require("./src/routes/apiRoutes.js");
+const { SERVER_MODE, CLIENT_URL } = require("./src/config/envConfig.js");
 
-// 환경별 설정 분리 (예시: NODE_ENV)
-const NODE_ENV = process.env.NODE_ENV || "development";
-console.log(`현재 환경: ${NODE_ENV}`);
+console.log(`현재 환경: ${SERVER_MODE}`);
 
 // express 서버 생성
 const app = express();
@@ -33,6 +32,7 @@ const server = http.createServer(app);
 app.use(
   cors({
     origin: [
+      CLIENT_URL,
       "http://localhost:1101",
       "http://localhost:2004",
       "https://your-vercel-domain.vercel.app",
@@ -93,7 +93,7 @@ app.use(limiter);
 //   console.log(getKoreaTime());
 // });
 
-if (process.env.NODE_ENV !== "test") {
+if (SERVER_MODE !== "test") {
   server.listen(PORT, () => {
     logger.info(`${PORT} 포트에서 서버가 시작되었습니다.`);
     logger.info(getKoreaTime());
@@ -105,7 +105,7 @@ app.use((err, req, res, next) => {
   logger.error("에러 발생: " + err.stack);
   res.status(err.status || 500).json({
     message: err.message || "서버 내부 오류",
-    error: NODE_ENV === "development" ? err : {},
+    error: SERVER_MODE === "development" ? err : {},
   });
 });
 

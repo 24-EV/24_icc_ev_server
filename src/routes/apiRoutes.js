@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { scanDynamoDB } = require("../services/dynamoDBService.js");
-const { generateExcel } = require("../utils/Utils.js");
+const { generateExcel } = require("../utils/utils.js");
 
 function initRouter(app) {
   app.use("/api", router);

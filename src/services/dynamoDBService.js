@@ -1,21 +1,21 @@
-const DataFormat = require("../constants/DataFormat.js");
 
 const { ScanCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { getDynamoDBClient } = require("../config/dynamoDBConfig.js");
-const { getKoreaTime } = require("../utils/Utils.js");
+const { getKoreaTime } = require("../utils/utils.js");
+const { CONTROLLER_VERSION } = require("../config/envConfig.js");
+const dataFormat = require("../constants/dataFormat.js");
 
 const dynamoDBClient = getDynamoDBClient("key"); // IAM 역할 할당 시 'key' -> 'role' 로 변경
-const CONTROLLER_VERSION = process.env.CONTROLLER_VERSION || 24;
 
 // 간단한 로깅 함수 (실제 운영에서는 winston 등 사용 권장)
 function logger(message, data) {
-  if (process.env.NODE_ENV !== "test") {
+  if (envConfig.SERVER_MODE !== "test") {
     console.log(`[${new Date().toISOString()}]`, message, data || "");
   }
 }
 
 async function saveToDynamoDB(data, version = CONTROLLER_VERSION) {
-  if (!DataFormat[version]) {
+  if (!dataFormat[version]) {
     throw new Error(`지원하지 않는 버전입니다. : ${version}`);
   }
 
@@ -23,7 +23,7 @@ async function saveToDynamoDB(data, version = CONTROLLER_VERSION) {
     TableName: "24_icc_ev_database",
     Item: {
       timestamp: { S: getKoreaTime() },
-      ...DataFormat[version],
+      ...dataFormat[version],
     },
   };
 
@@ -46,7 +46,7 @@ async function saveToDynamoDB(data, version = CONTROLLER_VERSION) {
 }
 
 async function scanDynamoDB(startDate, endDate, version = CONTROLLER_VERSION) {
-  if (!DataFormat[version]) {
+  if (!dataFormat[version]) {
     throw new Error(`지원하지 않는 버전입니다. : ${version}`);
   }
 
@@ -74,7 +74,7 @@ async function scanDynamoDB(startDate, endDate, version = CONTROLLER_VERSION) {
     return data.Items.map((item) => {
       const data = {
         timestamp: item.timestamp?.S || "N/A",
-        ...DataFormat[version],
+        ...dataFormat[version],
       };
 
       Object.keys(data).forEach((key) => {
