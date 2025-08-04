@@ -1,4 +1,4 @@
-const DataFormat = require("../utils/DataFormat.js");
+const DataFormat = require("../constants/DataFormat.js");
 const { parseData, getKoreaTime } = require("../utils/Utils.js");
 const { saveToDynamoDB } = require("../services/dynamoDBService.js");
 const { createSocketServer } = require("../config/socketConfig.js");
@@ -18,7 +18,8 @@ function initSocket(io) {
         `\n클라이언트 : ${version}             서버 : ${CONTROLLER_VERSION}` +
         "\n버전을 맞춰주세요.";
       const correctMessage =
-        "컨트롤러 버전 일치" + `\n클라이언트, 서버 : ${version}`;
+        "컨트롤러 버전 일치" +
+        `\n클라이언트 : ${version}             서버 : ${CONTROLLER_VERSION}`;
 
       if (version !== CONTROLLER_VERSION) {
         console.warn(errorMessage);

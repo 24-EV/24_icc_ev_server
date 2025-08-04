@@ -1,5 +1,5 @@
 // 데이터 파싱 함수 관련
-const DataFormat = {
+const dataFormat = {
   // 24년도 컨트롤러
   24: {
     RPM: null,
@@ -40,4 +40,4 @@ const DataFormat = {
   },
 };
 
-module.exports = DataFormat;
+module.exports = dataFormat;

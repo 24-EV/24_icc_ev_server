@@ -1,4 +1,4 @@
-const DataFormat = require("../utils/DataFormat.js");
+const DataFormat = require("../constants/DataFormat.js");
 
 const { ScanCommand, PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { getDynamoDBClient } = require("../config/dynamoDBConfig.js");
