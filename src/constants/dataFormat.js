@@ -37,6 +37,7 @@ const dataFormat = {
     Steering_angle: null,
     Batt_percent: null,
     Total_power: null,
+    Delta_T: null,
   },
 };
 
