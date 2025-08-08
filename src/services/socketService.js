@@ -34,8 +34,8 @@ function initSocket(io) {
       console.log(getKoreaTime(), "받은 메시지 : ", data);
     });
 
-    if (SERVER_MODE !== "production") {
-      // 서버 기능 테스트용
+    if (SERVER_MODE === "development") {
+      // 서버 기능 개발 테스트용
       setInterval(() => {
         const dataWithKey = socketTester();
 

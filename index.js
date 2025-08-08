@@ -34,8 +34,6 @@ app.use(
     origin: [
       CLIENT_URL,
       "http://localhost:1101",
-      "http://localhost:2004",
-      "https://your-vercel-domain.vercel.app",
     ],
   })
 );
